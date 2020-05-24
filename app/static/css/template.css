@@ -1,0 +1,77 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+    /*
+    * Formatting the header area
+    */
+    header {
+    background-color: #adc2eb;
+    height: 35px;
+    width: 100%;
+    opacity: .9;
+    margin-bottom: 10px;
+    padding: 0.2em;
+    }
+    header h1.logo {
+    color: #1a1a1a;
+    font-weight: normal;
+    margin: 0;
+    font-size: 2.2em;
+    float: left;
+    }
+    header h1.logo:hover {
+    text-decoration: none;
+    }
+    /*
+    * Centering the body content
+    */
+    .container {
+    width: 1200px;
+    margin: 0 auto;
+    }
+    div.home {
+    padding: 10px 0 30px 0;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    }
+    div.about {
+    padding: 10px 0 30px 0;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    }
+    div.article {
+    font-size: 0.8em;
+    padding: 1.5em;
+    }
+    h2 {
+    font-size: 1.4em;
+    margin-top: 40px;
+    text-align: left;
+    letter-spacing: -1px;
+    }
+    h3 {
+    font-size: 1.4em;
+    font-weight: 300;
+    margin-top: 10px;
+    text-align: left;
+    letter-spacing: -0.1px;
+    }
+    .menu {
+    background-color: #adc2eb;
+    height: 44px;
+    float: right;
+    margin-top: -6px;
+    }
+    .menu li {
+    display: inline;
+    }
+    .menu li + li {
+    margin-left: 35px;
+    }
+    .menu li a {
+    text-decoration: none;
+    }

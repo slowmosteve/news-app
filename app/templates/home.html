@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>About</title>
+</head>
+
+<body>
+    {% extends "template.html" %}
+    {% block content %}
+    <h2>Articles</h2>
+    {% for article in articles %}
+    <div class="article">
+        <p>
+        <h3>{{ article.title}}</h3>
+        <br>
+        <b>Author:</b> {{ article.author}}
+        <br>
+        <b>Description:</b> <i>{{ article.description}}</i>
+        <br>
+        <b>Content:</b> {{ article.content}}
+        <br>
+        <b>URL:</b> <a href="{{ article.url}}" target="_blank" rel="noopener noreferrer">{{ article.url}}</a>
+        <br>
+        <b>Published At:</b> <i>{{ article.publishedAt}}</i>
+        </p>
+    </div>
+    {% endfor %}
+    {% endblock %}
+</body>
+
+</html>
