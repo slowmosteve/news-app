@@ -18,7 +18,7 @@ def home():
     url_base = 'https://newsapi.org'
     url_path = '/v2/top-headlines'
     url_params = {
-        'country': 'ca',
+        # 'country': 'ca',
         'language': 'en',
         'apiKey': api_key
         }
@@ -46,7 +46,7 @@ def home():
 
         # populate fields from news results
         result = response.json()['articles'][i]
-        columns = ['title','author','description','content','url','publishedAt']
+        columns = ['title','author','description','content','url','urlToImage','publishedAt']
         for column in columns:
             details[column] = result[column]
         articles.append(details)
