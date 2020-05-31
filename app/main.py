@@ -1,6 +1,7 @@
 import requests
 import os
-from flask import Flask, request, render_template, session
+import uuid
+from flask import Flask, request, render_template, session, make_response, after_this_request, redirect
 from collections import defaultdict
 
 app = Flask(__name__)
@@ -8,12 +9,60 @@ app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SESSION_SECRET')
 app.config['SESSION_TYPE'] = 'filesystem'
 
+def check_or_set_user_id():
+    """checks if the user_id exists on the cookie otherwise generates a new one and sets it on the cookie
+
+    Returns:
+        resp: a Flask request response object 
+    """
+    # check if user_id exists on cookie otherwise generate a new one (not encrypted on cookie)
+    user_id = request.cookies.get('user_id')
+    if user_id:
+        print("Found user_id: {}".format(user_id))
+        resp = make_response()
+        return user_id
+    else:
+        user_uuid = uuid.uuid4()
+        print("Generating new ID: {}".format(user_uuid))
+        encoded_user_uuid = str(user_uuid).encode('utf-8')
+        resp = make_response(redirect('/home'))
+        resp.set_cookie('user_id', encoded_user_uuid)
+
+         # use deferred callback to set a cookie with the user ID
+        @after_this_request
+        def remember_user_id(response):
+            resp.set_cookie('user_id', encoded_user_uuid)
+            # return resp
+            return resp
+
+def count_hits():
+    """Returns the total hits for the current user stored on the Flask session
+    
+    Returns:
+        hits: The number of hits for the current user ID 
+    """
+    hits = session.get('hits', None)
+    if not hits:
+        session['hits'] = 1
+    else:
+        session['hits']+=1
+        print("The Total Number of refreshes for this user is: "+str(session['hits']))
+
+    return hits
+
+
 @app.route('/', methods=['GET'])
 def index():
     return ('Server running', 200)
 
 @app.route('/home')
 def home():
+    # check the user ID or set a new one on the cookie
+    user_id = check_or_set_user_id()
+
+    # count hits for the current user ID
+    user_hits = count_hits()
+
     api_key = os.getenv('NEWS_API_KEY')
     url_base = 'https://newsapi.org'
     url_path = '/v2/top-headlines'
@@ -53,11 +102,19 @@ def home():
     
     print('articles: '+str(articles))
 
-    return render_template('home.html', title='Home', articles=articles)
+    resp = make_response(render_template('home.html', title='Home', articles=articles, user_hits=user_hits, user_id=user_id))
+    return resp
 
 @app.route('/about')
 def about():
-    return render_template("about.html")
+    # check the user ID or set a new one on the cookie
+    user_id = check_or_set_user_id()
+
+    # count hits for the current user ID
+    user_hits = count_hits()
+
+    resp = make_response(render_template('about.html', title='About', user_hits=user_hits, user_id=user_id))
+    return resp
 
 if __name__ == '__main__':
     PORT = int(os.getenv('PORT')) if os.getenv('PORT') else 8080
