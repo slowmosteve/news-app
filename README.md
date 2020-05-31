@@ -4,7 +4,10 @@ This repository defines a news website built on the Flask framework using data f
 
 ## Setup
 
-`bin/setup.sh` is used to configure Python version and packages using `pyenv` and `pipenv`. It also prompts for the API key which will be stored in `.env` and picked up by `pipenv` as an environment variable. 
+`bin/setup.sh` is used to complete the following steps:
+- configure Python version and packages using `pyenv` and `pipenv`
+- prompt for the API key which will be stored in `.env` and picked up by `pipenv` as an environment variable
+- create a `FLASK_SESSION_SECRET` using `uuidgen` and store in `.env`
 
 Note that `.env` should be excluded from git.
 
