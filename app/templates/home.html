@@ -17,15 +17,15 @@
         <br>
         <b>Author:</b> {{ article.author}}
         <br>
-        <b>Description:</b> <i>{{ article.description}}</i>
+        <b>Description:</b> {{ article.description}}
         <br>
         <b>Content:</b> {{ article.content}}
         <br>
         <b>URL:</b> <a href="{{ article.url}}" target="_blank" rel="noopener noreferrer">{{ article.url}}</a>
         <br>
-        <b>Published At:</b> <i>{{ article.publishedAt}}</i>
+        <b>Published At:</b> {{ article.publishedAt}}
         <br>
-        <img src="{{ article.urlToImage}}" style="float:bottom;width:100px;height:100px;">
+        <img src="{{ article.urlToImage}}" style="float:bottom;max-width:300px;width:100%">
         </p>
     </div>
     {% endfor %}
