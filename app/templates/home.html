@@ -15,6 +15,8 @@
         <p>
         <h3>{{ article.title}}</h3>
         <br>
+        <b>Article ID:</b> {{ article.article_id}}
+        <br>
         <b>Author:</b> {{ article.author}}
         <br>
         <b>Description:</b> {{ article.description}}
@@ -22,6 +24,8 @@
         <b>Content:</b> {{ article.content}}
         <br>
         <b>URL:</b> <a href="{{ article.url}}" target="_blank" rel="noopener noreferrer">{{ article.url}}</a>
+        <br>
+        <b>Track URL:</b> <a href="/static/tracking/{{ article.article_id }}" target="_blank" rel="noopener noreferrer">/static/tracking/{{ article.article_id}}</a>
         <br>
         <b>Published At:</b> {{ article.publishedAt}}
         <br>

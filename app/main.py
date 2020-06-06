@@ -20,6 +20,7 @@ def check_or_set_user_id():
     if user_id:
         print("Found user_id: {}".format(user_id))
         resp = make_response()
+        session['user_id'] = user_id
         return user_id
     else:
         user_uuid = uuid.uuid4()
@@ -32,7 +33,7 @@ def check_or_set_user_id():
         @after_this_request
         def remember_user_id(response):
             resp.set_cookie('user_id', encoded_user_uuid)
-            # return resp
+            session['user_id'] = encoded_user_uuid
             return resp
 
 def count_hits():
@@ -86,6 +87,7 @@ def home():
     else:
         publish_range = response.json()['totalResults']
 
+    global articles
     articles = []
 
     # loop through results and add them to the message to be published
@@ -96,14 +98,35 @@ def home():
         # populate fields from news results
         result = response.json()['articles'][i]
         columns = ['title','author','description','content','url','urlToImage','publishedAt']
+        details['article_id'] = str(uuid.uuid4())
         for column in columns:
             details[column] = result[column]
         articles.append(details)
-    
-    print('articles: '+str(articles))
 
     resp = make_response(render_template('home.html', title='Home', articles=articles, user_hits=user_hits, user_id=user_id))
     return resp
+
+@app.route('/static/tracking/<article_id>')
+def tracking_article_view(article_id):
+    """Tracks the article clicked prior to redirecting the user
+    """
+    # get the user_id from cookie
+    user_id = check_or_set_user_id()
+
+    # find the dictionary for the article clicked in the list of article dictionaries
+    article_dict = next(item for item in articles if item['article_id'] == article_id)
+    article_title = article_dict['title']
+    article_url = article_dict['url']
+    print("""
+    *********************
+    tracking link click for article id: {}
+    user id: {}
+    article_title: {}
+    article_url: {}
+    *********************
+    """.format(article_id, user_id, article_title, article_url)
+    )
+    return redirect(article_url)
 
 @app.route('/about')
 def about():
