@@ -47,6 +47,10 @@ body {
     font-size: 0.8em;
     padding: 1.5em;
     }
+    div.user {
+    font-size: 0.8em;
+    padding: 1.5em;
+    }
     h2 {
     font-size: 1.4em;
     margin-top: 40px;
@@ -70,7 +74,7 @@ body {
     .menu {
     background-color: #adc2eb;
     height: 44px;
-    float: right;
+    float: left;
     margin-top: -6px;
     }
     .menu li {

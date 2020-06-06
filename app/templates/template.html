@@ -11,21 +11,18 @@
     <header>
         <div class="container">
             <h1 class="logo">News Site</h1>
-            <strong>
-                <nav>
-                    <ul class="menu">
-                        <li><a href="{{ url_for('home') }}">Home</a></li>
-                        <li><a href="{{ url_for('about') }}">About</a></li>
-                    </ul>
-                </nav>
-            </strong>
-            <br>
-            <br>
-            <h4> User ID: "{{ user_id }}" | Hits: "{{ user_hits }}" </h4>
-            <br>
+            <nav>
+                <ul class="menu">
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                </ul>
+            </nav>
         </div>
         <br>
     </header>
+    <div class="user"> 
+        User ID: "{{ user_id }}" | Hits: "{{ user_hits }}" 
+    </div>
     {% block content %}
     {% endblock %}
 </body>
