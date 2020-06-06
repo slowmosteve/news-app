@@ -46,8 +46,8 @@ def count_hits():
     if not hits:
         session['hits'] = 1
     else:
+        print("Hits from this user: "+str(session['hits']))
         session['hits']+=1
-        print("The Total Number of refreshes for this user is: "+str(session['hits']))
 
     return hits
 
