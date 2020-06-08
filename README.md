@@ -17,7 +17,7 @@ From the root directory run:
 source bin/setup.sh
 ```
 
-## Running the Flask app locally
+## Running the app locally
 
 Use `pipenv` to run Python commands in a virtual environment with requirements installed through the `Pipfile`. For example, we can run the Flask app locally using:
 
