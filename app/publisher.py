@@ -1,18 +1,22 @@
 import json
 import base64
-from google.cloud import bigquery, pubsub, storage
+from google.cloud import pubsub
 
-def pubsub_publish(topic_name, message_data):
+def pubsub_publish(project_id, publisher_client, topic_name, message_data):
     """Function that publishes a message to a GCP Pub/Sub topic
     Args:
+        project_id: GCP project ID
+        publisher_client: Pubsub publisher client
         topic_name: Pub/Sub topic name
         message_data: JSON message to be published
     """
-    pubsub_client = pubsub.PublisherClient()
     json_data = json.dumps(message_data)
     data_payload = base64.urlsafe_b64encode(bytearray(json_data, 'utf8'))
-    print_log("Publishing message: {}".format(json_data))
-    message_future = pubsub_client.publish(topic_name, data=data_payload)
+    print("Publishing message: {}".format(json_data))
+
+    topic_path = publisher_client.topic_path(project_id, topic_name)
+    print("Topic path: {}".format(topic_path))
+    message_future = publisher_client.publish(topic_path, data=data_payload)
     message_future.add_done_callback(pubsub_callback)
 
 def pubsub_callback(message_future):
@@ -23,6 +27,6 @@ def pubsub_callback(message_future):
     """
     # When timeout is unspecified, the exception method waits indefinitely.
     if message_future.exception(timeout=30):
-        print_log("Failed to publish message. exception: {}.".format(message_future.exception()))
+        print("Failed to publish message. exception: {}.".format(message_future.exception()))
     else:
-        print_log("Published message update id: {}".format(message_future.result()))
+        print("Published message update id: {}".format(message_future.result()))
