@@ -9,6 +9,8 @@ verify_ssl = true
 requests = "*"
 flask = "*"
 google-cloud-storage = "*"
+google-cloud-bigquery = "*"
+google-cloud-pubsub = "*"
 
 [requires]
 python_version = "3.7"
