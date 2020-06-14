@@ -2,7 +2,7 @@ import uuid
 import json
 import datetime
 from flask import session, request, make_response, after_this_request, redirect
-from gcp import pubsub_publish, pubsub_callback
+from publisher import pubsub_publish, pubsub_callback
 
 def check_or_set_user_id():
     """checks if the user_id exists on the cookie otherwise generates a new one and sets it on the cookie
@@ -46,10 +46,12 @@ def count_hits():
 
     return hits
 
-def track_impressions(articles, user_id):
+def track_impressions(project_id, pubsub_client, articles, user_id):
     """Tracks articles that were presented to a given user regardless of whether they were clicked
 
     Args:
+        project_id: GCP project ID
+        pubsub_client: Pubsub publisher client
         articles: list of dictionaries with article metadata
         user_id: ID of the user
     """
@@ -59,7 +61,7 @@ def track_impressions(articles, user_id):
     impression_tracker['articles'] = []
     for item in articles:
         # print(item['title'])
-        impression_tracker['articles'].append(item['title'])
+        impression_tracker['articles'].append(item)
 
     print("""
     *********************
@@ -69,14 +71,16 @@ def track_impressions(articles, user_id):
     )
 
     # publish message to pubsub topic
-    # pubsub_publish('news_impressions', json.dumps(impression_tracker))
+    pubsub_publish(project_id, pubsub_client, 'news_impressions', json.dumps(impression_tracker))
 
     return 204
 
-def track_click_and_get_url(article_id, articles, user_id):
+def track_click_and_get_url(project_id, pubsub_client, article_id, articles, user_id):
     """Tracks a link click based on article ID and returns the article URL
 
     Args:
+        project_id: GCP project ID
+        pubsub_client: Pubsub publisher client
         article_id: article ID which can be mapped to article metadata
         articles: list of dictionaries with article metadata
         user_id: ID of the user
@@ -100,6 +104,6 @@ def track_click_and_get_url(article_id, articles, user_id):
     )
 
     # publish message to pubsub topic
-    # pubsub_publish('news_clicks', json.dumps(click_tracker))
+    pubsub_publish(project_id, pubsub_client, 'news_clicks', json.dumps(click_tracker))
 
     return article_url

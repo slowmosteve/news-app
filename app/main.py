@@ -3,11 +3,13 @@ import os
 import uuid
 from flask import Flask, request, render_template, session, make_response, after_this_request, redirect
 from tracking import check_or_set_user_id, count_hits, track_click_and_get_url, track_impressions
+from google.cloud import pubsub
 
 app = Flask(__name__)
 
 app.secret_key = os.getenv('FLASK_SESSION_SECRET')
 app.config['SESSION_TYPE'] = 'filesystem'
+GCP_PROJECT_ID = os.getenv('GCP_PROJECT_ID')
 
 @app.route('/', methods=['GET'])
 def index():
@@ -15,6 +17,11 @@ def index():
 
 @app.route('/home')
 def home():
+    # set GCp project and instantiate pubsub client
+
+    print("GCP project: {}".format(GCP_PROJECT_ID))
+    pubsub_client = pubsub.PublisherClient.from_service_account_json('./.creds/news-site-publisher.json')
+
     # check the user ID or set a new one on the cookie
     user_id = check_or_set_user_id()
 
@@ -60,16 +67,19 @@ def home():
             details[column] = result[column]
         articles.append(details)
 
-    track_impressions(articles, user_id)
+    track_impressions(GCP_PROJECT_ID, pubsub_client, articles, user_id)
 
     resp = make_response(render_template('home.html', title='Home', articles=articles, user_hits=user_hits, user_id=user_id))
     return resp
 
 @app.route('/static/tracking/<article_id>')
 def tracking_article_view(article_id):
+    # instantiate pubsub client
+    pubsub_client = pubsub.PublisherClient.from_service_account_json('./.creds/news-site-publisher.json')
+
     # tracks the article clicked prior to redirecting the user
     user_id = check_or_set_user_id()
-    redirect_url = track_click_and_get_url(article_id, articles, user_id)
+    redirect_url = track_click_and_get_url(GCP_PROJECT_ID, pubsub_client, article_id, articles, user_id)
 
     return redirect(redirect_url)
 
