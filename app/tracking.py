@@ -1,5 +1,8 @@
 import uuid
+import json
+import datetime
 from flask import session, request, make_response, after_this_request, redirect
+from gcp import pubsub_publish, pubsub_callback
 
 def check_or_set_user_id():
     """checks if the user_id exists on the cookie otherwise generates a new one and sets it on the cookie
@@ -43,7 +46,34 @@ def count_hits():
 
     return hits
 
-def track_and_get_url(article_id, articles, user_id):
+def track_impressions(articles, user_id):
+    """Tracks articles that were presented to a given user regardless of whether they were clicked
+
+    Args:
+        articles: list of dictionaries with article metadata
+        user_id: ID of the user
+    """
+    impression_tracker = {}
+    impression_tracker['user_id'] = user_id
+    impression_tracker['impression_timestamp'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    impression_tracker['articles'] = []
+    for item in articles:
+        # print(item['title'])
+        impression_tracker['articles'].append(item['title'])
+
+    print("""
+    *********************
+    impression tracker: {}
+    *********************
+    """.format(json.dumps(impression_tracker))
+    )
+
+    # publish message to pubsub topic
+    # pubsub_publish('news_impressions', json.dumps(impression_tracker))
+
+    return 204
+
+def track_click_and_get_url(article_id, articles, user_id):
     """Tracks a link click based on article ID and returns the article URL
 
     Args:
@@ -54,15 +84,22 @@ def track_and_get_url(article_id, articles, user_id):
 
     # find the dictionary for the article clicked in the list of article dictionaries
     article_dict = next(item for item in articles if item['article_id'] == article_id)
-    article_title = article_dict['title']
-    article_url = article_dict['url']
+    article_url = article_dict['url'] 
+
+    # populate click tracker dictionary
+    click_tracker = {}
+    click_tracker['user_id'] = user_id
+    click_tracker['click_timestamp'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    click_tracker['article_clicked'] = article_dict
+
     print("""
     *********************
-    tracking link click for article id: {}
-    user id: {}
-    article_title: {}
-    article_url: {}
+    click tracker: {}
     *********************
-    """.format(article_id, user_id, article_title, article_url, user_id)
+    """.format(json.dumps(click_tracker))
     )
+
+    # publish message to pubsub topic
+    # pubsub_publish('news_clicks', json.dumps(click_tracker))
+
     return article_url

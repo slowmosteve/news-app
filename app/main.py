@@ -2,8 +2,7 @@ import requests
 import os
 import uuid
 from flask import Flask, request, render_template, session, make_response, after_this_request, redirect
-from collections import defaultdict
-from tracking import check_or_set_user_id, count_hits, track_and_get_url
+from tracking import check_or_set_user_id, count_hits, track_click_and_get_url, track_impressions
 
 app = Flask(__name__)
 
@@ -51,7 +50,7 @@ def home():
     # loop through results and add them to the message to be published
     for i in range(publish_range):
         # create empty list of article details
-        details = defaultdict(list)
+        details = {}
 
         # populate fields from news results
         result = response.json()['articles'][i]
@@ -61,6 +60,8 @@ def home():
             details[column] = result[column]
         articles.append(details)
 
+    track_impressions(articles, user_id)
+
     resp = make_response(render_template('home.html', title='Home', articles=articles, user_hits=user_hits, user_id=user_id))
     return resp
 
@@ -68,7 +69,7 @@ def home():
 def tracking_article_view(article_id):
     # tracks the article clicked prior to redirecting the user
     user_id = check_or_set_user_id()
-    redirect_url = track_and_get_url(article_id, articles, user_id)
+    redirect_url = track_click_and_get_url(article_id, articles, user_id)
 
     return redirect(redirect_url)
 
