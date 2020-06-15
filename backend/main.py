@@ -1,11 +1,13 @@
 import os
+import gcsfs
 from flask import Flask, request
-from subscriber import get_messages, callback
+from subscriber import Subscriber
 from google.cloud import pubsub
 
 app = Flask(__name__)
 
 GCP_PROJECT_ID = os.getenv('GCP_PROJECT_ID')
+gcsfs = gcsfs.GCSFileSystem(project=GCP_PROJECT_ID, token='./.creds/news-site-subscriber.json')
 
 @app.route('/', methods=['GET'])
 def index():
@@ -16,13 +18,13 @@ def fetch_data():
     """This route will retrieve messages from the Pubsub topic
     """
     # instantiate a pubsub subscriber client
-    subscriber = pubsub.SubscriberClient.from_service_account_json('./.creds/news-site-subscriber.json')
-    subscription_path = subscriber.subscription_path(GCP_PROJECT_ID, 'news_impressions')
+    subscriber_client = pubsub.SubscriberClient.from_service_account_json('./.creds/news-site-subscriber.json')
+    subscription_path = subscriber_client.subscription_path(GCP_PROJECT_ID, 'news_impressions')
 
-    messages = get_messages(subscriber, subscription_path)
+    subscriber = Subscriber(subscriber_client, gcsfs)
+    messages = subscriber.get_messages(subscription_path)
 
     return messages
-
 
 if __name__ == '__main__':
     PORT = int(os.getenv('PORT')) if os.getenv('PORT') else 8081

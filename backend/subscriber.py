@@ -1,30 +1,56 @@
 import json
 import base64
+import gcsfs
 from google.cloud import pubsub
-from concurrent.futures import TimeoutError
 
-def callback(message):
-    """Acknowledges messages and prints to console
-    """
-    print("Received message: {}".format(message))
-    message.ack()
+class Subscriber:
+    def __init__ (self, subscriber_client, gcsfs):
+        """Instantiates the Subscriber class for accessing messages from a Pubsub subscription
+        and writing messages to Cloud Storage
+        Args:
+            subscriber_client: Pubsub subscriber client
+            gcsfs: a client for GCSFS
+        """
+        self.subscriber_client = subscriber_client
+        self.gcsfs = gcsfs
 
-def get_messages(subscriber_client, subscription_path):
-    """Retrieves messages from a Pubsub topic
+    def get_messages(self, subscription_path):
+        """Retrieves messages from a Pubsub topic
 
-    Args:
-        subscriber_client: a Pubsub subscriber client
-        subscription_path: a Pubsub subscription path
-    """
-    # duration in seconds that the subscriber should listen for messages
-    timeout = 10
+        Args:
+            subscription_path: a Pubsub subscription path
+        """
+        # maximum messages to process
+        max_messages = 10
 
-    streaming_pull_future = subscriber_client.subscribe(subscription_path, callback=callback)
-    print("Listening for messages on {}..\n".format(subscription_path))
+        response = self.subscriber_client.pull(subscription_path, max_messages=max_messages)
 
-    with subscriber_client:
-        try:
-            streaming_pull_future.result(timeout=timeout)
-        except TimeoutError:
-            streaming_pull_future.cancel()
-            return 'Completed retrieving messages', 200
+        ack_ids = []
+        message_list = []
+        for received_message in response.received_messages:
+            print("Received message ID: {} | published {}".format(received_message.message.message_id, received_message.message.publish_time))
+            ack_ids.append(received_message.ack_id)
+            decoded_message = json.loads(received_message.message.data.decode('utf-8'))
+            print("Message: {}".format(decoded_message))
+            message_list.append(decoded_message)
+
+        self.write_messages_to_file(message_list, "gs://impressions-news-site-280319", "test")
+
+        # Acknowledges the received messages so they will not be sent again.
+        self.subscriber_client.acknowledge(subscription_path, ack_ids)
+
+        return "Received and acknowledged {} messages".format(len(response.received_messages)), 200
+
+    def write_messages_to_file(self, message_list, bucket_path, filename):
+        """Write pubsub messages to NDJSON file to be loaded to BigQuery
+        Args:
+            message_list: list of dictionaries to be converted to NDJSON file
+            bucket_path: GCS bucket path e.g. "gs://bucket_path"
+            filename: name of the resulting file without extension
+        """
+        
+        with self.gcsfs.open("{}/{}.ndjson".format(bucket_path, filename), 'w') as f:
+            for item in message_list:
+                f.write(item+'\n')
+
+        return "Messages written to file", 200

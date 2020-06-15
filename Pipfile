@@ -11,6 +11,7 @@ flask = "*"
 google-cloud-storage = "*"
 google-cloud-bigquery = "*"
 google-cloud-pubsub = "*"
+gcsfs = "*"
 
 [requires]
 python_version = "3.7"

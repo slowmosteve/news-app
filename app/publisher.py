@@ -11,11 +11,10 @@ def pubsub_publish(project_id, publisher_client, topic_name, message_data):
         message_data: JSON message to be published
     """
     json_data = json.dumps(message_data)
-    data_payload = base64.urlsafe_b64encode(bytearray(json_data, 'utf8'))
+    data_payload = json_data.encode('utf-8')
     print("Publishing message: {}".format(json_data))
 
     topic_path = publisher_client.topic_path(project_id, topic_name)
-    print("Topic path: {}".format(topic_path))
     message_future = publisher_client.publish(topic_path, data=data_payload)
     message_future.add_done_callback(pubsub_callback)
 
