@@ -18,9 +18,20 @@ From the root directory run:
 source bin/setup.sh
 ```
 
-## Credentials
+## GCP Credentials
 
 This project uses Google Cloud for services like Cloud Run, Pub/Sub, Cloud Storage and BigQuery. Service accounts keys are stored in the `/.creds` directory which is excluded from git.
+
+## GCP Setup
+
+Resources needed for this project:
+- Storage bucket
+- Pubsub topics `news_impressions` and `news_clicks`
+- Pubsub pull subscriptions `news_impressions` and `news_clicks`
+- BigQuery dataset `news` with tables for `impressions` and `clicks`
+- Publisher service account (Pubsub publisher)
+- Subscriber service account (Pubsub viewer, Pubsub publisher, Storage admin)
+- Loader service account (Storage admin, BQ data editor)
 
 ## Running the app locally
 

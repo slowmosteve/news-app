@@ -2,7 +2,7 @@ import uuid
 import json
 import datetime
 from flask import session, request, make_response, after_this_request, redirect
-from publisher import pubsub_publish, pubsub_callback
+from publisher import Publisher
 
 def check_or_set_user_id():
     """checks if the user_id exists on the cookie otherwise generates a new one and sets it on the cookie
@@ -71,7 +71,9 @@ def track_impressions(project_id, pubsub_client, articles, user_id):
     )
 
     # publish message to pubsub topic
-    pubsub_publish(project_id, pubsub_client, 'news_impressions', json.dumps(impression_tracker))
+    publisher = Publisher(pubsub_client)
+    publisher_path = pubsub_client.topic_path(project_id, 'news_impressions')
+    publisher.pubsub_publish(publisher_path, json.dumps(impression_tracker))
 
     return 204
 
@@ -104,6 +106,8 @@ def track_click_and_get_url(project_id, pubsub_client, article_id, articles, use
     )
 
     # publish message to pubsub topic
-    pubsub_publish(project_id, pubsub_client, 'news_clicks', json.dumps(click_tracker))
+    publisher = Publisher(pubsub_client)
+    publisher_path = pubsub_client.topic_path(project_id, 'news_clicks')
+    publisher.pubsub_publish(publisher_path, json.dumps(click_tracker))
 
     return article_url
