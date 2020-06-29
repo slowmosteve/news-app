@@ -14,12 +14,13 @@ class Subscriber:
         self.subscriber_client = subscriber_client
         self.gcsfs = gcsfs
 
-    def get_messages(self, subscription_path, bucket_name):
+    def get_messages(self, subscription_path, bucket_name, filename):
         """Retrieves messages from a Pubsub topic and writes to bucket
 
         Args:
             subscription_path: a Pubsub subscription path
             bucket_name: Cloud Storage bucket name
+            filename: name of the resulting file without extension
         """
         try:
             # maximum messages to process
@@ -37,7 +38,13 @@ class Subscriber:
                 message_list.append(decoded_message)
 
             bucket_path = 'gs://{}'.format(bucket_name)
-            self.write_messages_to_file(message_list, bucket_path, "test")
+            
+            # only write files with messages
+            if len(message_list) > 0:
+                self.write_messages_to_file(message_list, bucket_path, filename)
+                print('wrote file {} to bucket {}'.format(filename, bucket_path))
+            else:
+                print('no messages in file {}')
 
             # Acknowledges the received messages so they will not be sent again.
             self.subscriber_client.acknowledge(subscription_path, ack_ids)
