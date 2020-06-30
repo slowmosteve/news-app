@@ -59,9 +59,13 @@ def track_impressions(project_id, pubsub_client, articles, user_id):
     impression_tracker['user_id'] = user_id
     impression_tracker['impression_timestamp'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     impression_tracker['articles'] = []
+    columns_to_track = ['article_id', 'title', 'publishedAt', 'resultType']
     for item in articles:
-        # print(item['title'])
-        impression_tracker['articles'].append(item)
+        article_impression_tracking = {}
+        for field in item:
+            if field in columns_to_track:
+                article_impression_tracking[field] = item[field]
+        impression_tracker['articles'].append(article_impression_tracking)
 
     print("""
     *********************
@@ -96,7 +100,14 @@ def track_click_and_get_url(project_id, pubsub_client, article_id, articles, use
     click_tracker = {}
     click_tracker['user_id'] = user_id
     click_tracker['click_timestamp'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    click_tracker['article_clicked'] = article_dict
+    
+    columns_to_track = ['article_id', 'title', 'publishedAt', 'resultType']
+    article_click_tracking = {}
+    for field in article_dict:
+        if field in columns_to_track:
+            article_click_tracking[field] = article_dict[field]
+
+    click_tracker['article_clicked'] = article_click_tracking
 
     print("""
     *********************

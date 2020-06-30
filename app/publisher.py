@@ -18,7 +18,7 @@ class Publisher:
         """
         json_data = json.dumps(message_data)
         data_payload = json_data.encode('utf-8')
-        print("Publishing message: {}".format(json_data))
+        # print("Publishing message: {}".format(json_data))
 
         message_future = self.publisher_client.publish(topic_path, data=data_payload)
         message_future.add_done_callback(self.pubsub_callback)

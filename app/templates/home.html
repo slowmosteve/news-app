@@ -7,7 +7,11 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
-
+    <style>
+      body {
+        font-size: 0.7rem;
+      }
+    </style>
     <title>News Site</title>
   </head>
   <body>
@@ -43,6 +47,27 @@
             <h3 class="mt-0 mb-1">Personalized</h3>
             <ul class="list-unstyled"></ul>
             {% for article in articles_v2 %}
+                <li class="media">
+                  <img src="{{ article.urlToImage}}" class="mr-3" style="float:bottom;max-width:50px;width:100%">
+                  <div class="media-body">
+                    <h5 class="mt-0 mb-1">{{ article.title}}</h5>
+                    <b>Description:</b> {{ article.description}}
+                    <br>
+                    <b>Content:</b> {{ article.content}}
+                    <br>
+                    <b>URL:</b> <a href="{{ article.url}}" target="_blank" rel="noopener noreferrer">{{ article.url}}</a>
+                    <br>
+                    <b>Track URL:</b> <a href="/static/tracking/{{ article.article_id }}" target="_blank" rel="noopener noreferrer">/static/tracking/{{ article.article_id}}</a>
+                    <br>
+                  </div>
+                </li>
+                {% endfor %}
+              </ul>
+          </div>
+          <div class="col-md">
+            <h3 class="mt-0 mb-1">Random</h3>
+            <ul class="list-unstyled"></ul>
+            {% for article in articles_random %}
                 <li class="media">
                   <img src="{{ article.urlToImage}}" class="mr-3" style="float:bottom;max-width:50px;width:100%">
                   <div class="media-body">

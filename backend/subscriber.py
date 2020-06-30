@@ -34,7 +34,7 @@ class Subscriber:
                 print("Received message ID: {} | published {}".format(received_message.message.message_id, received_message.message.publish_time))
                 ack_ids.append(received_message.ack_id)
                 decoded_message = json.loads(received_message.message.data.decode('utf-8'))
-                print("Message: {}".format(decoded_message))
+                # print("Message: {}".format(decoded_message))
                 message_list.append(decoded_message)
 
             bucket_path = 'gs://{}'.format(bucket_name)
