@@ -35,12 +35,27 @@ def home():
     articles = []
 
     # get latest articles from bigquery
-    latest_articles = os.getenv('ARTICLES_TABLE')
+    latest_articles_table = os.getenv('ARTICLES_TABLE')
+    personalized_articles_table = os.getenv('PERSONALIZED_ARTICLES_TABLE')
     articles_query = """
-        SELECT
-            * EXCEPT (load_timestamp, article_order)
-        FROM `{}`
-    """.format(latest_articles)
+        WITH latest_articles AS (
+            SELECT
+                * EXCEPT (load_timestamp, article_order)
+            FROM `{}`
+        ),
+        personalized_articles AS (
+            SELECT
+                'personalized' AS sort,
+                * EXCEPT (user_id, topic, total_clicks, user_already_clicked, article_order, load_timestamp)
+            FROM `{}`
+            WHERE
+                user_id = '{}'
+            LIMIT 10
+        )
+        SELECT * FROM latest_articles
+        UNION ALL
+        SELECT * FROM personalized_articles
+    """.format(latest_articles_table, personalized_articles_table, user_id)
     print('running query: {}'.format(articles_query))
 
     # run query and store results in list of dictionaries
@@ -58,6 +73,7 @@ def home():
     latest_articles = [d for d in articles if d['sort'] == 'latest']
     popular_articles = [d for d in articles if d['sort'] == 'popular']
     random_articles = [d for d in articles if d['sort'] == 'random']
+    personalized_articles = [d for d in articles if d['sort'] == 'personalized']
 
     # track article impressions
     track_impressions(GCP_PROJECT_ID, pubsub_client, articles, user_id)
@@ -68,7 +84,7 @@ def home():
                 'home.html', 
                 title='Home', 
                 articles=latest_articles, 
-                articles_v2=popular_articles, 
+                articles_v2=personalized_articles, 
                 articles_random=random_articles, 
                 user_hits=user_hits, 
                 user_id=user_id
