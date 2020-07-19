@@ -5,24 +5,26 @@ import json
 from flask import Flask, request, render_template, session, make_response, after_this_request, redirect
 from tracking import check_or_set_user_id, count_hits, track_click_and_get_url, track_impressions
 from google.cloud import pubsub, bigquery
+import google.auth
+from google.auth import impersonated_credentials
 
 app = Flask(__name__)
 
 app.secret_key = os.getenv('FLASK_SESSION_SECRET')
 app.config['SESSION_TYPE'] = 'filesystem'
-GCP_PROJECT_ID = os.getenv('GCP_PROJECT_ID')
 
 @app.route('/', methods=['GET'])
 def index():
+    print(os.listdir())
     return ('Server running', 200)
 
 @app.route('/home')
 def home():
     # set GCP project and instantiate pubsub client
 
-    print("GCP project: {}".format(GCP_PROJECT_ID))
-    pubsub_client = pubsub.PublisherClient.from_service_account_json('./.creds/news-site-publisher.json')
-    bigquery_client = bigquery.Client.from_service_account_json('./.creds/news-site-bq-loader.json')
+    credentials, gcp_project_id = google.auth.default()
+    pubsub_client = pubsub.PublisherClient(credentials=credentials)
+    bigquery_client = bigquery.Client(project=gcp_project_id, credentials=credentials)
 
     # check the user ID or set a new one on the cookie
     user_id = check_or_set_user_id()
@@ -50,6 +52,9 @@ def home():
             FROM `{}`
             WHERE
                 user_id = '{}'
+                AND user_already_clicked = FALSE
+            ORDER BY
+                total_clicks DESC, publishedAt DESC
             LIMIT 10
         )
         SELECT * FROM latest_articles
@@ -76,7 +81,7 @@ def home():
     personalized_articles = [d for d in articles if d['sort'] == 'personalized']
 
     # track article impressions
-    track_impressions(GCP_PROJECT_ID, pubsub_client, articles, user_id)
+    track_impressions(gcp_project_id, pubsub_client, articles, user_id)
 
     # create flask response
     resp = make_response(
@@ -96,11 +101,13 @@ def home():
 @app.route('/static/tracking/<article_id>')
 def tracking_article_view(article_id):
     # instantiate pubsub client
-    pubsub_client = pubsub.PublisherClient.from_service_account_json('./.creds/news-site-publisher.json')
 
+    credentials, gcp_project_id = google.auth.default()
+    pubsub_client = pubsub.PublisherClient(credentials=credentials)
+    
     # tracks the article clicked prior to redirecting the user
     user_id = check_or_set_user_id()
-    redirect_url = track_click_and_get_url(GCP_PROJECT_ID, pubsub_client, article_id, articles, user_id)
+    redirect_url = track_click_and_get_url(gcp_project_id, pubsub_client, article_id, articles, user_id)
 
     return redirect(redirect_url)
 

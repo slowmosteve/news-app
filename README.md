@@ -40,3 +40,17 @@ Use `pipenv` to run Python commands in a virtual environment with requirements i
 ```
 pipenv run python app/main.py
 ```
+
+## Running the app as a container
+
+Use `docker` to build an image from the `/app` directory.
+
+```
+docker build . -t app
+```
+
+Run the app with port forwarding using the following. Note that the service account key is mounted as a volume and a file with environment variables is passed to the container.
+
+```
+docker run --rm -p 127.0.0.1:8080:8080 -v ~/projects/news-site/.creds/news-site.json:/creds/news-site.json --env-file ../.docker_env/docker_env app
+```
