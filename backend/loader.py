@@ -42,15 +42,15 @@ class Loader:
             print("starting job {}".format(load_job.job_id))
             load_job.result()
             destination_table = self.bq_client.get_table(dataset_ref.table(table_id))
-            print("loaded {} rows to BigQuery".format(destination_table.num_rows))
+            print("table {} has {} rows".format(destination_table.table_id, destination_table.num_rows))
 
             # transfer file to processed bucket
             source_blob = source_bucket.blob(filename)
             destination_blob = source_bucket.copy_blob(source_blob, destination_bucket, filename)
-            print("Transfered file to processed bucket: {}".format(filename))
+            print("transfered file to processed bucket: {}".format(filename))
 
             # delete file from staging bucket
             source_blob.delete()
-            print("Deleted file from staging bucket: {}".format(filename))
+            print("deleted file from staging bucket: {}".format(filename))
 
         return "Completed loading files to BigQuery", 200
