@@ -5,6 +5,7 @@ import datetime
 import gcsfs
 import requests
 import uuid
+import logging
 from flask import Flask, request
 from subscriber import Subscriber
 from loader import Loader
@@ -14,34 +15,61 @@ from google.auth import impersonated_credentials
 
 app = Flask(__name__)
 
+logging.basicConfig(level=logging.INFO)
+
 GCP_PROJECT_ID = os.getenv('GCP_PROJECT_ID')
+ENV = os.getenv('ENV')
 gcsfs = gcsfs.GCSFileSystem(project=GCP_PROJECT_ID)
 
-@app.route('/', methods=['GET'])
-def index():
-    return ('Backend server running', 200)
-
-@app.route('/get_news', methods=['GET'])
 def get_news():
+    """This function retrieves news data and stores in cloud storage
+    """
+    logger = logging.getLogger('app.get_news')
 
     credentials, gcp_project_id = google.auth.default()
     gcs_client = storage.Client(credentials=credentials)
 
-    api_key = os.getenv('NEWS_API_KEY')
+    if ENV=='prod':
+        secrets_bucket_name = os.getenv('SECRETS_BUCKET')
+        secrets_bucket = gcs_client.get_bucket(secrets_bucket_name)
+        secret_blob = secrets_bucket.get_blob('news-api-key.json').download_as_string()
+        secret_json = json.loads(secret_blob.decode('utf-8'))
+        api_key = secret_json['key']
+    else:
+        api_key = os.getenv('NEWS_API_KEY')
+
+    date_filter = (datetime.date.today() - datetime.timedelta(1)).strftime('%Y-%m-%d')
+
+    domain_list_string = """
+        abcnews.go.com, apnews.com, aljazeera.com, axios.com, bbc.co.uk, bloomberg.com, 
+        cbc.ca, us.cnn.com, engadget.com, ew.com, espn.go.com, business.financialpost.com, 
+        fortune.com, foxnews.com, news.google.com, news.ycombinator.com, ign.com, 
+        mashable.com, msnbc.com, mtv.com, nationalgeographic.com, nbcnews.com, 
+        newscientist.com, newsweek.com, nymag.com, nextbigfuture.com, polygon.com, 
+        reuters.com, techcrunch.com, techradar.com, theglobeandmail.com, 
+        huffingtonpost.com, thenextweb.com, theverge.com, wsj.com, washingtonpost.com, 
+        time.com, usatoday.com, news.vice.com, wired.com
+    """
+
     url_base = 'https://newsapi.org'
-    url_path = '/v2/top-headlines'
+    url_path = '/v2/everything'
     url_params = {
+        'from': date_filter,
         'language': 'en',
         'apiKey': api_key,
-        'pageSize': 100 
+        'pageSize': 100,
+        'sortBy': 'publishedAt',
+        'domains': domain_list_string
         }
     print('requesting news for endpoint: {}, params: {}'.format(url_path, url_params))
+    logger.info('requesting news for endpoint: {}, params: {}'.format(url_path, url_params))
 
     url_params['apiKey'] = api_key
     request_url = str(url_base + url_path)
     response = requests.get(request_url, params=url_params)
 
     print('status: '+str(response.json()['status']))
+    logger.info('status: '+str(response.json()['status']))
 
     articles = []
     current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -72,13 +100,15 @@ def get_news():
         output_file.write('\n')
 
     print('wrote file {}.ndjson to bucket'.format(filename))
+    logger.info('wrote file {}.ndjson to bucket'.format(filename))
 
     return "Retrieved news data", 200
 
-@app.route('/load_news', methods=['GET'])
 def load_news():
-    """This route will load news files in the storage bucket to the BigQuery tables 
+    """This function will load news files in the storage bucket to the BigQuery tables 
     """
+    logger = logging.getLogger('app.load_news')
+
     credentials, gcp_project_id = google.auth.default()
     gcs_client = storage.Client(project=gcp_project_id, credentials=credentials)
     bigquery_client = bigquery.Client(project=gcp_project_id, credentials=credentials)
@@ -90,14 +120,18 @@ def load_news():
     articles_bucket = os.getenv('ARTICLES_BUCKET')
     articles_processed_bucket = os.getenv('ARTICLES_PROCESSED_BUCKET')
     articles_table_id = 'articles'
+    print('loading news from bucket')
+    logger.info('loading news from bucket')
     articles_load_job = loader.load_from_bucket(articles_bucket, articles_processed_bucket, dataset_id, articles_table_id)
 
     return "Loaded news data to BigQuery", 200
 
-@app.route('/get_messages', methods=['GET'])
-def fetch_data():
-    """This route will retrieve messages from the Pubsub topic
+
+def get_tracking():
+    """This function will retrieve tracking messages from the Pubsub topic
     """
+    logger = logging.getLogger('app.get_tracking')
+
     credentials, gcp_project_id = google.auth.default()
     # instantiate a pubsub subscriber client and subscriber class
     subscriber_client = pubsub.SubscriberClient(credentials=credentials)
@@ -107,24 +141,18 @@ def fetch_data():
     current_time = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
     # subscribe to impressions topic to retrieve messages and write to bucket
-    print("""
-        *********************
-        processing impressions
-        *********************
-    """
-    )
+    print('*** processing impressions ***')
+    logger.info('*** processing impressions ***')
+
     impressions_bucket = os.getenv('IMPRESSIONS_BUCKET')
     subscription_path = subscriber_client.subscription_path(gcp_project_id, 'news_impressions')
     impressions_filename = 'impression-{}'.format(current_time)
     impressions_messages = subscriber.get_messages(subscription_path, impressions_bucket, impressions_filename)
 
     # subscribe to clicks topic to retrieve messages and write to bucket
-    print("""
-        *********************
-        processing clicks
-        *********************
-    """
-    )
+    print('*** processing clicks ***')
+    logger.info('*** processing clicks ***')
+
     clicks_bucket = os.getenv('CLICKS_BUCKET')
     subscription_path = subscriber_client.subscription_path(gcp_project_id, 'news_clicks')
     clicks_filename = 'clicks-{}'.format(current_time)
@@ -133,12 +161,11 @@ def fetch_data():
     # return impressions_messages
     return "Pulled tracking messages from topic", 200
 
-@app.route('/load_tracking', methods=['GET'])
+
 def load_tracking():
-    """This route will load tracking files in the storage bucket to the BigQuery tables 
+    """This function will load tracking files in the storage bucket to the BigQuery tables 
     """
     credentials, gcp_project_id = google.auth.default()
-    # instantiate a bigquery client
     bigquery_client = bigquery.Client(project=gcp_project_id, credentials=credentials)
     gcs_client = storage.Client(project=gcp_project_id, credentials=credentials)
 
@@ -156,6 +183,76 @@ def load_tracking():
     clicks_load_job = loader.load_from_bucket(clicks_bucket, clicks_processed_bucket, dataset_id, clicks_table_id)
 
     return "Loaded tracking data to BigQuery", 200
+
+
+@app.route('/', methods=['GET'])
+def index():
+    return ('Backend server running', 200)
+
+@app.route('/get_and_load_news', methods=['POST'])
+def get_and_load_news():
+    """This route retrieves news data and writes to cloud storage before loading to BigQuery
+    """
+
+    logger = logging.getLogger('app.get_and_load_news')
+    print('requesting news')
+    logger.info('requesting news')
+    get_news()
+
+    retries = 3
+    count = 1
+    status = None
+    while (status != 200 or count < retries):
+        time.sleep(10)
+        print('loading news (attempt: {}'.format(count))
+        logger.info('loading news (attempt: {}'.format(count))
+        status = load_news()[1]
+        print('loading news status {}'.format(status))
+        logger.info('loading news status {}'.format(status))
+
+        if status == 200:
+            return "Retrieved news and loaded data to BigQuery", 200
+
+        count += 1
+
+    return "Unable to retrieve and load news", 204
+
+
+@app.route('/get_and_load_tracking', methods=['POST'])
+def get_and_load_tracking():
+    """This route will retrieve messages from the Pubsub topic and load to BigQuery
+    """
+    logger = logging.getLogger('app.get_and_load_tracking')
+    print('retrieving tracking messages')
+    logger.info('retrieving tracking messages')
+    get_tracking()
+
+    retries = 3
+    count = 1
+    status = None
+    while (status != 200 or count < retries):
+        time.sleep(10)
+        print('loading tracking (attempt: {}'.format(count))
+        logger.info('loading tracking (attempt: {}'.format(count))
+        status = load_tracking()[1]
+        print('loading tracking status {}'.format(status))
+        logger.info('loading tracking status {}'.format(status))
+
+        if status == 200:
+            return "Retrieved tracking and loaded data to BigQuery", 200
+
+        count += 1
+
+    return "Unable to retrieve and load tracking", 204
+
+
+@app.route('/get_recommendations', methods=['GET'])
+def get_recommendations():
+    """This route will run the topic model used to populate the recommended articles for all users
+    """
+    credentials, gcp_project_id = google.auth.default()
+    bigquery_client = bigquery.Client(project=gcp_project_id, credentials=credentials)
+    
 
 if __name__ == '__main__':
     PORT = int(os.getenv('PORT')) if os.getenv('PORT') else 8081

@@ -1,7 +1,10 @@
 import json
 import base64
 import gcsfs
+import logging
 from google.cloud import pubsub
+
+logger = logging.getLogger('app.subscriber')
 
 class Subscriber:
     def __init__(self, subscriber_client, gcsfs):
@@ -26,12 +29,18 @@ class Subscriber:
             # maximum messages to process
             max_messages = 10
 
-            response = self.subscriber_client.pull(subscription_path, max_messages=max_messages)
+            response = self.subscriber_client.pull(
+                request={
+                    "subscription": subscription_path, 
+                    "max_messages": max_messages
+                }
+            )
 
             ack_ids = []
             message_list = []
             for received_message in response.received_messages:
                 print("Received message ID: {} | published {}".format(received_message.message.message_id, received_message.message.publish_time))
+                logger.info("Received message ID: {} | published {}".format(received_message.message.message_id, received_message.message.publish_time))
                 ack_ids.append(received_message.ack_id)
                 decoded_message = json.loads(received_message.message.data.decode('utf-8'))
                 # print("Message: {}".format(decoded_message))
@@ -43,16 +52,24 @@ class Subscriber:
             if len(message_list) > 0:
                 self.write_messages_to_file(message_list, bucket_path, filename)
                 print('wrote file {} to bucket {}'.format(filename, bucket_path))
+                logger.info('wrote file {} to bucket {}'.format(filename, bucket_path))
             else:
-                print('no messages in file {}')
+                print('no messages found')
+                logger.info('no messages found')
 
             # Acknowledges the received messages so they will not be sent again.
-            self.subscriber_client.acknowledge(subscription_path, ack_ids)
+            self.subscriber_client.acknowledge(
+                request={
+                    "subscription": subscription_path, 
+                    "ack_ids": ack_ids
+                }
+            )
 
             return "Received and acknowledged {} messages".format(len(response.received_messages)), 200
 
         except Exception as e:
             print(e)
+            logger.info(e)
 
             return "Failed to get messages", 400
 
