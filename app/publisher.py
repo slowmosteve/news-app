@@ -1,6 +1,9 @@
 import json
 import base64
+import logging
 from google.cloud import pubsub
+
+logger = logging.getLogger('app.publisher')
 
 class Publisher:
     def __init__(self, publisher_client):
@@ -32,5 +35,7 @@ class Publisher:
         # When timeout is unspecified, the exception method waits indefinitely.
         if message_future.exception(timeout=30):
             print("Failed to publish message. exception: {}.".format(message_future.exception()))
+            logger.info("Failed to publish message. exception: {}.".format(message_future.exception()))
         else:
             print("Published message update id: {}".format(message_future.result()))
+            logger.info("Published message update id: {}".format(message_future.result()))

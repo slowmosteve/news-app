@@ -1,8 +1,11 @@
 import uuid
 import json
 import datetime
+import logging
 from flask import session, request, make_response, after_this_request, redirect
 from publisher import Publisher
+
+logger = logging.getLogger('app.tracking')
 
 def check_or_set_user_id():
     """checks if the user_id exists on the cookie otherwise generates a new one and sets it on the cookie
@@ -14,12 +17,14 @@ def check_or_set_user_id():
     user_id = request.cookies.get('user_id')
     if user_id:
         print("Found user_id: {}".format(user_id))
+        logger.info("Found user_id: {}".format(user_id))
         resp = make_response()
         session['user_id'] = user_id
         return user_id
     else:
         user_uuid = uuid.uuid4()
         print("Generating new ID: {}".format(user_uuid))
+        logger.info("Generating new ID: {}".format(user_uuid))
         encoded_user_uuid = str(user_uuid).encode('utf-8')
         resp = make_response(redirect('/home'))
         resp.set_cookie('user_id', encoded_user_uuid)
@@ -42,6 +47,7 @@ def count_hits():
         session['hits'] = 1
     else:
         print("Hits from this user: "+str(session['hits']))
+        logger.info("Hits from this user: "+str(session['hits']))
         session['hits']+=1
 
     return hits
@@ -68,6 +74,12 @@ def track_impressions(project_id, pubsub_client, articles, user_id):
         impression_tracker['articles'].append(article_impression_tracking)
 
     print("""
+    *********************
+    impression tracker: {}
+    *********************
+    """.format(json.dumps(impression_tracker))
+    )
+    logger.info("""
     *********************
     impression tracker: {}
     *********************
@@ -110,6 +122,12 @@ def track_click_and_get_url(project_id, pubsub_client, article_id, articles, use
     click_tracker['article_clicked'] = article_click_tracking
 
     print("""
+    *********************
+    click tracker: {}
+    *********************
+    """.format(json.dumps(click_tracker))
+    )
+    logger.info("""
     *********************
     click tracker: {}
     *********************

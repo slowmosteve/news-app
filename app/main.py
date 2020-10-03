@@ -3,6 +3,7 @@ import os
 import uuid
 import json
 from flask import Flask, request, render_template, session, make_response, after_this_request, redirect
+import logging
 from tracking import check_or_set_user_id, count_hits, track_click_and_get_url, track_impressions
 from google.cloud import pubsub, bigquery
 import google.auth
@@ -10,18 +11,20 @@ from google.auth import impersonated_credentials
 
 app = Flask(__name__)
 
+logging.basicConfig(level=logging.INFO)
+
 app.secret_key = os.getenv('FLASK_SESSION_SECRET')
 app.config['SESSION_TYPE'] = 'filesystem'
 
 @app.route('/', methods=['GET'])
 def index():
-    print(os.listdir())
     return ('Server running', 200)
 
 @app.route('/home')
 def home():
-    # set GCP project and instantiate pubsub client
+    logger = logging.getLogger('app.home')
 
+    # set GCP project and instantiate pubsub client
     credentials, gcp_project_id = google.auth.default()
     pubsub_client = pubsub.PublisherClient(credentials=credentials)
     bigquery_client = bigquery.Client(project=gcp_project_id, credentials=credentials)
@@ -61,14 +64,16 @@ def home():
         UNION ALL
         SELECT * FROM personalized_articles
     """.format(latest_articles_table, personalized_articles_table, user_id)
+    
     print('running query: {}'.format(articles_query))
+    logger.info('running query: {}'.format(articles_query))
 
     # run query and store results in list of dictionaries
     query_job = bigquery_client.query(articles_query)
     for row in query_job:
         articles.append(dict(row))
 
-    # convert datetime objects to strings for default
+    # # convert datetime objects to strings for default
     for i in articles:
         for field in i:
             if field == 'publishedAt':
@@ -101,7 +106,6 @@ def home():
 @app.route('/static/tracking/<article_id>')
 def tracking_article_view(article_id):
     # instantiate pubsub client
-
     credentials, gcp_project_id = google.auth.default()
     pubsub_client = pubsub.PublisherClient(credentials=credentials)
     
