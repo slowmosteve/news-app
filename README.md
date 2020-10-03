@@ -54,3 +54,25 @@ Run the app with port forwarding using the following. Note that the service acco
 ```
 docker run --rm -p 127.0.0.1:8080:8080 -v ~/projects/news-site/.creds/news-site.json:/creds/news-site.json --env-file ../.docker_env/docker_env app
 ```
+
+Run the backend with the following:
+
+```
+docker run --rm -p 127.0.0.1:8081:8081 -v ~/projects/news-site/.creds/news-site.json:/creds/news-site.json --env-file ../.docker_env/docker_env backend
+```
+
+## Running on Cloud Run
+
+From the `/app` directory, build the app container and publish on Container Registry `gcloud builds submit --tag gcr.io/[project id]/news_app`
+
+Deploy app `gcloud run deploy news-app --image gcr.io/[project id]/news_app`
+
+From the `/backend` directory, build the app container and publish on Container Registry `gcloud builds submit --tag gcr.io/[project id]/backend`
+
+```
+gcloud run deploy --image gcr.io/[project-id]/backend backend --update-env-vars ENV=prod,GCP_PROJECT_ID=[project-id],SECRETS_BUCKET=secrets-[project-id],ARTICLES_BUCKET=articles-[project-id],ARTICLES_PROCESSED_BUCKET=articles-processed-[project-id],IMPRESSIONS_BUCKET=impressions-[project-id],IMPRESSIONS_PROCESSED_BUCKET=impressions-processed-[project-id],CLICKS_BUCKET=clicks-[project-id],CLICKS_PROCESSED_BUCKET=clicks-processed-[project-id]
+```
+
+Deploy app `gcloud run deploy backend --image gcr.io/[project id]/backend`
+
+TO DO: update env vars `gcloud run services update news-app --update-env-vars`
