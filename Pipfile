@@ -12,6 +12,7 @@ google-cloud-storage = "*"
 google-cloud-bigquery = "*"
 google-cloud-pubsub = "*"
 gcsfs = "*"
+papermill = "*"
 
 [requires]
 python_version = "3.7"

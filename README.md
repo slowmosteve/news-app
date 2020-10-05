@@ -55,6 +55,12 @@ Run the app with port forwarding using the following. Note that the service acco
 docker run --rm -p 127.0.0.1:8080:8080 -v ~/projects/news-site/.creds/news-site.json:/creds/news-site.json --env-file ../.docker_env/docker_env app
 ```
 
+Similaryl, use `docker` to build an image from the `/backend` directory. Note that at the time of writing `papermill` has some incompatibilities that can be worked around by using `pipenv lock --pre` 
+
+```
+docker build . -t backend
+```
+
 Run the backend with the following:
 
 ```
@@ -70,7 +76,7 @@ Deploy app `gcloud run deploy news-app --image gcr.io/[project id]/news_app`
 From the `/backend` directory, build the app container and publish on Container Registry `gcloud builds submit --tag gcr.io/[project id]/backend`
 
 ```
-gcloud run deploy --image gcr.io/[project-id]/backend backend --update-env-vars ENV=prod,GCP_PROJECT_ID=[project-id],SECRETS_BUCKET=secrets-[project-id],ARTICLES_BUCKET=articles-[project-id],ARTICLES_PROCESSED_BUCKET=articles-processed-[project-id],IMPRESSIONS_BUCKET=impressions-[project-id],IMPRESSIONS_PROCESSED_BUCKET=impressions-processed-[project-id],CLICKS_BUCKET=clicks-[project-id],CLICKS_PROCESSED_BUCKET=clicks-processed-[project-id]
+gcloud run deploy --image gcr.io/[project-id]/backend backend --update-env-vars ENV=prod,GCP_PROJECT_ID=[project-id],SECRETS_BUCKET=secrets-[project-id],ARTICLES_BUCKET=articles-[project-id],ARTICLES_PROCESSED_BUCKET=articles-processed-[project-id],IMPRESSIONS_BUCKET=impressions-[project-id],IMPRESSIONS_PROCESSED_BUCKET=impressions-processed-[project-id],CLICKS_BUCKET=clicks-[project-id],CLICKS_PROCESSED_BUCKET=clicks-processed-[project-id],NOTEBOOK_BUCKET=notebook-[project-id]
 ```
 
 Deploy app `gcloud run deploy backend --image gcr.io/[project id]/backend`

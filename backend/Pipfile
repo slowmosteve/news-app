@@ -13,6 +13,16 @@ google-cloud-storage = "*"
 google-cloud-bigquery = "*"
 google-cloud-pubsub = "*"
 gcsfs = "*"
+pandas = "*"
+numpy = "*"
+papermill = "*"
+jupyter = "*"
+gensim = "*"
+spacy = "*"
+pyarrow = "*"
 
 [requires]
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true

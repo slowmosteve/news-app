@@ -6,6 +6,7 @@ import gcsfs
 import requests
 import uuid
 import logging
+import papermill
 from flask import Flask, request
 from subscriber import Subscriber
 from loader import Loader
@@ -246,12 +247,24 @@ def get_and_load_tracking():
     return "Unable to retrieve and load tracking", 204
 
 
-@app.route('/get_recommendations', methods=['GET'])
+@app.route('/get_recommendations', methods=['POST'])
 def get_recommendations():
     """This route will run the topic model used to populate the recommended articles for all users
     """
-    credentials, gcp_project_id = google.auth.default()
-    bigquery_client = bigquery.Client(project=gcp_project_id, credentials=credentials)
+    logger = logging.getLogger('app.get_recommendations')
+    print('Updating topic model and recommendations')
+    logger.info('Updating topic model and recommendations')
+
+    notebook_bucket = os.getenv('NOTEBOOK_BUCKET')
+    run_time = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+
+    papermill.execute_notebook(
+        'gs://{}/prod/topic-prod.ipynb'.format(notebook_bucket),
+        'gs://{}/out/topic-out-{}.ipynb'.format(notebook_bucket, run_time),
+        kernel_name = 'python3'
+    )
+
+    return "Ran topic model and updated recommendations", 200
     
 
 if __name__ == '__main__':
