@@ -80,5 +80,3 @@ gcloud run deploy backend --image gcr.io/[project-id]/backend --update-env-vars 
 ```
 
 Deploy app `gcloud run deploy backend --image gcr.io/[project id]/backend`
-
-TO DO: update env vars `gcloud run services update news-app --update-env-vars`
