@@ -1,6 +1,8 @@
 # news-site
 
-This repository defines a news website built on the Flask framework using data from NewsApi.org
+This repository defines a news website built in Google Cloud Platform using the Flask framework with data from NewsApi.org
+
+![news site diagram](./news-site.png "News Site Diagram")
 
 ## Setup
 
