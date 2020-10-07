@@ -75,8 +75,10 @@ Deploy app `gcloud run deploy news-app --image gcr.io/[project id]/news_app`
 
 From the `/backend` directory, build the app container and publish on Container Registry `gcloud builds submit --tag gcr.io/[project id]/backend`
 
+Deploy app `gcloud run deploy backend --image gcr.io/[project id]/backend`
+
+Set env vars using the `--update-env-vars` flag:
+
 ```
 gcloud run deploy backend --image gcr.io/[project-id]/backend --update-env-vars ENV=prod,GCP_PROJECT_ID=[project-id],SECRETS_BUCKET=secrets-[project-id],ARTICLES_BUCKET=articles-[project-id],ARTICLES_PROCESSED_BUCKET=articles-processed-[project-id],IMPRESSIONS_BUCKET=impressions-[project-id],IMPRESSIONS_PROCESSED_BUCKET=impressions-processed-[project-id],CLICKS_BUCKET=clicks-[project-id],CLICKS_PROCESSED_BUCKET=clicks-processed-[project-id],NOTEBOOK_BUCKET=notebook-[project-id]
 ```
-
-Deploy app `gcloud run deploy backend --image gcr.io/[project id]/backend`
