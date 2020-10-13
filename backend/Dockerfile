@@ -12,15 +12,11 @@ RUN pipenv lock --requirements > requirements.txt
 RUN pip install -r requirements.txt
 RUN python -m spacy download en_core_web_md-2.3.1 --direct
 
-# Running locally uses 8081. TODO figure out how to use this port with Cloud Run
-# EXPOSE 8081
-EXPOSE 8080
+# Expose port 8081 since the frontend is using 8080
+EXPOSE 8081
 
 # Run the web service on container startup. 
 # Use gunicorn webserver with one worker process and 8 threads.
 # For environments with multiple CPU cores, increase the number of workers
 # to be equal to the cores available.
-
-# Running locally uses 8081. TODO figure out how to use this port with Cloud Run
-# CMD exec gunicorn --bind :8081 --workers 1 --threads 8 main:app
-CMD exec gunicorn --bind :8080 --workers 1 --threads 8 main:app
+CMD exec gunicorn --bind :8081 --workers 1 --threads 8 main:app
