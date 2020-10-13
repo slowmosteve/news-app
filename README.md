@@ -1,6 +1,6 @@
 # news-site
 
-This repository defines a news website built in Google Cloud Platform using the Flask framework with data from NewsApi.org. The goal of this project is to demonstrate a lightweight, end to end application that incorporates data retrieval, frontend presentation, server side analytics, and NLP modeling. This version aims to run on free tier services in GCP and has been written completely in Python in order to keep the project simple. 
+This repository defines a news website built in Google Cloud Platform using the Flask framework with data from NewsApi.org. The goal of this project is to demonstrate a lightweight, end to end application that incorporates data retrieval, front end presentation, server side analytics, and NLP modeling. This version aims to run on free tier services in GCP and has been written completely in Python in order to keep the project simple. 
 
 ![news site diagram](./news-site.png "News Site Diagram")
 
@@ -49,7 +49,7 @@ Run the app with port forwarding using the following. Note that the service acco
 docker run --rm -p 127.0.0.1:8080:8080 -v ~/projects/news-site/.creds/news-site.json:/creds/news-site.json --env-file ../.docker_env/docker_env app
 ```
 
-Similaryl, use `docker` to build an image from the `/backend` directory. Note that at the time of writing `papermill` has some incompatibilities that can be worked around by using `pipenv lock --pre` 
+Similarly, use `docker` to build an image from the `/backend` directory. Note that at the time of writing `papermill` has some incompatibilities that can be worked around by using `pipenv lock --pre` 
 
 ```
 docker build . -t backend
