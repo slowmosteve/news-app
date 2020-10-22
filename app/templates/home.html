@@ -34,12 +34,11 @@
                     <br>
                     <b>Description:</b> {{ article.description}}
                     <br>
-                    <b>Content:</b> {{ article.content}}
+                    <b>Content:</b> {{ article.content }}
                     <br>
-                    <!-- <b>URL:</b> <a href="{{ article.url}}" target="_blank" rel="noopener noreferrer">{{ article.url}}</a>
-                    <br> -->
-                    <b>Link:</b> <a href="/static/tracking/{{ article.article_id }}" target="_blank" rel="noopener noreferrer">{{ article.url }}</a>
+                    <b>Source:</b> {{ article.url.split('.')[-2:][0].upper() }}
                     <br>
+                    <a href="/static/tracking/{{ article.article_id }}" class="btn btn-sm btn-outline-info" role="button">Link to Article</a>
                   </div>
                 </li>
                 {% endfor %}
@@ -55,14 +54,13 @@
                     <h5 class="mt-0 mb-1">{{ article.title}}</h5>
                     <b>Published:</b> {{ article.publishedAt }}
                     <br>
-                    <b>Description:</b> {{ article.description}}
+                    <b>Description:</b> {{ article.description }}
                     <br>
-                    <b>Content:</b> {{ article.content}}
+                    <b>Content:</b> {{ article.content }}
                     <br>
-                    <!-- <b>URL:</b> <a href="{{ article.url}}" target="_blank" rel="noopener noreferrer">{{ article.url}}</a>
-                    <br> -->
-                    <b>Link:</b> <a href="/static/tracking/{{ article.article_id }}" target="_blank" rel="noopener noreferrer">{{ article.url }}</a>
+                    <b>Source:</b> {{ article.url.split('.')[-2:][0].upper() }}
                     <br>
+                    <a href="/static/tracking/{{ article.article_id }}" class="btn btn-sm btn-outline-info" role="button">Link to Article</a>
                   </div>
                 </li>
                 {% endfor %}
@@ -80,12 +78,11 @@
                     <br>
                     <b>Description:</b> {{ article.description}}
                     <br>
-                    <b>Content:</b> {{ article.content}}
+                    <b>Content:</b> {{ article.content }}
                     <br>
-                    <!-- <b>URL:</b> <a href="{{ article.url}}" target="_blank" rel="noopener noreferrer">{{ article.url}}</a>
-                    <br> -->
-                    <b>Link:</b> <a href="/static/tracking/{{ article.article_id }}" target="_blank" rel="noopener noreferrer">{{ article.url }}</a>
+                    <b>Source:</b> {{ article.url.split('.')[-2:][0].upper() }}
                     <br>
+                    <a href="/static/tracking/{{ article.article_id }}" class="btn btn-sm btn-outline-info" role="button">Link to Article</a>
                   </div>
                 </li>
                 {% endfor %}

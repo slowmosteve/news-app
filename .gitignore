@@ -145,6 +145,6 @@ dmypy.json
 # Credentials
 .docker_env
 .env
-cred
+.creds
 
 # End of https://www.toptal.com/developers/gitignore/api/python
