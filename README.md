@@ -68,7 +68,7 @@ From the `/app` directory, build the app container and publish on Container Regi
 
 Deploy app and set env vars:
 ```
-gcloud run deploy news-app --image gcr.io/$GCP_PROJECT_ID/news-app --set-env-vars FLASK_SESSION_SECRET=$FLASK_SESSION_SECRET,PERSONALIZED_ARTICLES_TABLE=$GCP_PROJECT_ID.topics.user_article_recommendations,ARTICLES_TABLE=$GCP_PROJECT_ID.news.articles_view
+gcloud run deploy news-app --image gcr.io/$GCP_PROJECT_ID/news_app --set-env-vars FLASK_SESSION_SECRET=$FLASK_SESSION_SECRET,PERSONALIZED_ARTICLES_TABLE=$GCP_PROJECT_ID.topics.user_article_recommendations,ARTICLES_TABLE=$GCP_PROJECT_ID.news.articles_view
 ```
 
 From the `/backend` directory, build the app container and publish on Container Registry `gcloud builds submit --tag gcr.io/image gcr.io/$GCP_PROJECT_ID/backend`
