@@ -36,9 +36,9 @@
                     <br>
                     <b>Content:</b> {{ article.content }}
                     <br>
-                    <b>Source:</b> {{ article.url.split('.')[-2:][0].upper() }}
+                    <b>Source:</b> {{ article.url_host }}
                     <br>
-                    <a href="/static/tracking/{{ article.article_id }}" class="btn btn-sm btn-outline-info" role="button">Link to Article</a>
+                    <a href="/static/tracking/{{ article.article_id }}" target="_blank" class="btn btn-sm btn-outline-info" role="button">Link to Article</a>
                   </div>
                 </li>
                 {% endfor %}
@@ -58,9 +58,9 @@
                     <br>
                     <b>Content:</b> {{ article.content }}
                     <br>
-                    <b>Source:</b> {{ article.url.split('.')[-2:][0].upper() }}
+                    <b>Source:</b> {{ article.url_host }}
                     <br>
-                    <a href="/static/tracking/{{ article.article_id }}" class="btn btn-sm btn-outline-info" role="button">Link to Article</a>
+                    <a href="/static/tracking/{{ article.article_id }}" target="_blank" class="btn btn-sm btn-outline-info" role="button">Link to Article</a>
                   </div>
                 </li>
                 {% endfor %}
@@ -80,9 +80,9 @@
                     <br>
                     <b>Content:</b> {{ article.content }}
                     <br>
-                    <b>Source:</b> {{ article.url.split('.')[-2:][0].upper() }}
+                    <b>Source:</b> {{ article.url_host }}
                     <br>
-                    <a href="/static/tracking/{{ article.article_id }}" class="btn btn-sm btn-outline-info" role="button">Link to Article</a>
+                    <a href="/static/tracking/{{ article.article_id }}" target="_blank" class="btn btn-sm btn-outline-info" role="button">Link to Article</a>
                   </div>
                 </li>
                 {% endfor %}
