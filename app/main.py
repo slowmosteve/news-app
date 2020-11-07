@@ -88,15 +88,19 @@ def home():
     # track article impressions
     track_impressions(gcp_project_id, pubsub_client, articles, user_id)
 
+    # Check if articles are empty
+    if (len(personalized_articles) < 1):
+        personalized_articles = popular_articles
+
     # create flask response
     resp = make_response(
             render_template(
-                'home.html', 
-                title='Home', 
-                articles=latest_articles, 
-                articles_v2=personalized_articles, 
-                articles_random=random_articles, 
-                user_hits=user_hits, 
+                'home.html',
+                title='Home',
+                articles=latest_articles,
+                articles_v2=personalized_articles,
+                articles_random=random_articles,
+                user_hits=user_hits,
                 user_id=user_id
             )
         )
