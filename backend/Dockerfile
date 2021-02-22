@@ -10,7 +10,6 @@ COPY . ./
 RUN pip install pipenv
 RUN pipenv lock --requirements > requirements.txt
 RUN pip install -r requirements.txt
-RUN python -m spacy download en_core_web_md-2.3.1 --direct
 
 # Expose port 8081 since the frontend is using 8080
 EXPOSE 8081
