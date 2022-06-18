@@ -37,28 +37,28 @@ Resources needed for this project:
 
 ## Running the app locally as a container
 
-Use `docker` to build an image from the `/app` directory.
+Use `docker` to build an image for the front end app
 
 ```
-docker build . -t app
+docker build ./app -t app
 ```
 
 Run the app with port forwarding using the following. Note that the service account key is mounted as a volume and a file with environment variables is passed to the container.
 
 ```
-docker run --rm -p 127.0.0.1:8080:8080 -v ~/projects/news-site/.creds/news-site.json:/creds/news-site.json --env-file ../.docker_env/docker_env app
+docker run --rm -p 127.0.0.1:8080:8080 -v ~/projects/news-site/.creds/news-site.json:/creds/news-site.json --env-file .docker_env/docker_env app
 ```
 
-Similarly, use `docker` to build an image from the `/backend` directory. Note that at the time of writing `papermill` has some incompatibilities that can be worked around by using `pipenv lock --pre` 
+Similarly, use `docker` to build an image for the backend. Note that at the time of writing `papermill` has some incompatibilities that can be worked around by using `pipenv lock --pre` 
 
 ```
-docker build . -t backend
+docker build ./backend -t backend
 ```
 
 Run the backend with the following:
 
 ```
-docker run --rm -p 127.0.0.1:8081:8081 -v ~/projects/news-site/.creds/news-site.json:/creds/news-site.json --env-file ../.docker_env/docker_env backend
+docker run --rm -p 127.0.0.1:8081:8081 -v ~/projects/news-site/.creds/news-site.json:/creds/news-site.json --env-file .docker_env/docker_env backend
 ```
 
 
@@ -71,7 +71,7 @@ Deploy app and set env vars:
 gcloud run deploy news-app --image gcr.io/$GCP_PROJECT_ID/news_app --set-env-vars FLASK_SESSION_SECRET=$FLASK_SESSION_SECRET,PERSONALIZED_ARTICLES_TABLE=$GCP_PROJECT_ID.topics.user_article_recommendations,ARTICLES_TABLE=$GCP_PROJECT_ID.news.articles_view
 ```
 
-From the `/backend` directory, build the app container and publish on Container Registry `gcloud builds submit --tag gcr.io/image gcr.io/$GCP_PROJECT_ID/backend`
+From the `/backend` directory, build the app container and publish on Container Registry `gcloud builds submit --tag gcr.io/$GCP_PROJECT_ID/backend`
 
 Deploy app and set flags for env vars using `--update-env-vars`. Also change default port using `--port`:
 
