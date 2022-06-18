@@ -29,12 +29,12 @@ def check_or_set_user_id():
         resp = make_response(redirect('/home'))
         resp.set_cookie('user_id', encoded_user_uuid)
 
-         # use deferred callback to set a cookie with the user ID
-        @after_this_request
-        def remember_user_id(response):
-            resp.set_cookie('user_id', encoded_user_uuid)
-            session['user_id'] = encoded_user_uuid
-            return resp
+        #  # use deferred callback to set a cookie with the user ID
+        # @after_this_request
+        # def remember_user_id(response):
+        #     resp.set_cookie('user_id', encoded_user_uuid)
+        #     session['user_id'] = encoded_user_uuid
+        #     return resp
 
 def count_hits():
     """Returns the total hits for the current user stored on the Flask session
