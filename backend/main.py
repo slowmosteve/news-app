@@ -75,21 +75,18 @@ def get_news():
     articles = []
     current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     filename_time = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-
-    for i in range(len(response.json()['articles'])):
-        # create empty list of article details
+    # populate article list with details for each article
+    for index, article in enumerate(response.json()['articles']):
         details = {}
-
-        # populate fields from news results
-        result = response.json()['articles'][i]
         # print('\n{}\n'.format(result))
-        columns = ['title','author','description','content','url','urlToImage','publishedAt']
         details['article_id'] = str(uuid.uuid4())
-        details['article_order'] = i
+        details['article_order'] = index
         details['load_timestamp'] = current_time
-        for column in columns:
-            details[column] = result[column]
+        for column in ['title', 'author', 'description', 'content', 'url', 'urlToImage', 'publishedAt']:
+            details[column] = article[column]
         articles.append(details)
+
+    print("articles: {}".format(articles))
 
     bucket_path = os.getenv('ARTICLES_BUCKET')
     filename = 'news-{}'.format(filename_time)

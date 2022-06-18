@@ -1,8 +1,5 @@
 import json
-import base64
-import gcsfs
 import logging
-from google.cloud import pubsub
 
 logger = logging.getLogger('app.subscriber')
 
