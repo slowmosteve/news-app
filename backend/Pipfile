@@ -22,6 +22,7 @@ tensorflow = "*"
 tensorflow_hub = "*"
 scikit-learn = "*"
 sentencepiece = "*"
+db-dtypes = "*"
 
 [requires]
 python_version = "3.7"
