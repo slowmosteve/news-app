@@ -29,12 +29,12 @@ def check_or_set_user_id():
         resp = make_response(redirect('/home'))
         resp.set_cookie('user_id', encoded_user_uuid)
 
-        #  # use deferred callback to set a cookie with the user ID
-        # @after_this_request
-        # def remember_user_id(response):
-        #     resp.set_cookie('user_id', encoded_user_uuid)
-        #     session['user_id'] = encoded_user_uuid
-        #     return resp
+     # use deferred callback to set a cookie with the user ID
+        @after_this_request
+        def remember_user_id(response):
+            resp.set_cookie('user_id', encoded_user_uuid)
+            session['user_id'] = encoded_user_uuid
+            return resp
 
 def count_hits():
     """Returns the total hits for the current user stored on the Flask session
@@ -46,9 +46,9 @@ def count_hits():
     if not hits:
         session['hits'] = 1
     else:
-        print("Hits from this user: "+str(session['hits']))
-        logger.info("Hits from this user: "+str(session['hits']))
-        session['hits']+=1
+        print("Hits from this user: {}".format(str(session['hits'])))
+        logger.info("Hits from this user: {}".format(str(session['hits'])))
+        session['hits'] += 1
 
     return hits
 
@@ -65,12 +65,11 @@ def track_impressions(project_id, pubsub_client, articles, user_id):
     impression_tracker['user_id'] = user_id
     impression_tracker['impression_timestamp'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     impression_tracker['articles'] = []
-    columns_to_track = ['article_id', 'title', 'publishedAt', 'sort']
-    for item in articles:
+    for article in articles:
         article_impression_tracking = {}
-        for field in item:
-            if field in columns_to_track:
-                article_impression_tracking[field] = item[field]
+        for field in article:
+            if field in ['article_id', 'title', 'publishedAt', 'sort']:
+                article_impression_tracking[field] = article[field]
         impression_tracker['articles'].append(article_impression_tracking)
 
     print("""
@@ -113,10 +112,9 @@ def track_click_and_get_url(project_id, pubsub_client, article_id, articles, use
     click_tracker['user_id'] = user_id
     click_tracker['click_timestamp'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
-    columns_to_track = ['article_id', 'title', 'publishedAt', 'sort']
     article_click_tracking = {}
     for field in article_dict:
-        if field in columns_to_track:
+        if field in ['article_id', 'title', 'publishedAt', 'sort']:
             article_click_tracking[field] = article_dict[field]
 
     click_tracker['article_clicked'] = article_click_tracking
