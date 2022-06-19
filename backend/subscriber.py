@@ -28,19 +28,18 @@ class Subscriber:
 
             response = self.subscriber_client.pull(
                 request={
-                    "subscription": subscription_path, 
-                    "max_messages": max_messages
+                    'subscription': subscription_path, 
+                    'max_messages': max_messages
                 }
             )
 
             ack_ids = []
             message_list = []
             for received_message in response.received_messages:
-                print("Received message ID: {} | published {}".format(received_message.message.message_id, received_message.message.publish_time))
-                logger.info("Received message ID: {} | published {}".format(received_message.message.message_id, received_message.message.publish_time))
+                print('Received message ID: {} | published {}'.format(received_message.message.message_id, received_message.message.publish_time))
+                logger.info('Received message ID: {} | published {}'.format(received_message.message.message_id, received_message.message.publish_time))
                 ack_ids.append(received_message.ack_id)
                 decoded_message = json.loads(received_message.message.data.decode('utf-8'))
-                # print("Message: {}".format(decoded_message))
                 message_list.append(decoded_message)
 
             bucket_path = 'gs://{}'.format(bucket_name)
@@ -57,18 +56,18 @@ class Subscriber:
             # Acknowledges the received messages so they will not be sent again.
             self.subscriber_client.acknowledge(
                 request={
-                    "subscription": subscription_path, 
-                    "ack_ids": ack_ids
+                    'subscription': subscription_path, 
+                    'ack_ids': ack_ids
                 }
             )
 
-            return "Received and acknowledged {} messages".format(len(response.received_messages)), 200
+            return 'Received and acknowledged {} messages'.format(len(response.received_messages)), 200
 
         except Exception as e:
             print(e)
             logger.info(e)
 
-            return "Failed to get messages", 400
+            return 'Failed to get messages', 400
 
     def write_messages_to_file(self, message_list, bucket_path, filename):
         """Write pubsub messages to NDJSON file to be loaded to BigQuery
@@ -78,8 +77,8 @@ class Subscriber:
             filename: name of the resulting file without extension
         """
         
-        with self.gcsfs.open("{}/{}.ndjson".format(bucket_path, filename), 'w') as f:
+        with self.gcsfs.open('{}/{}.ndjson'.format(bucket_path, filename), 'w') as f:
             for item in message_list:
                 f.write(item+'\n')
 
-        return "Messages written to file", 200
+        return 'Messages written to file', 200
