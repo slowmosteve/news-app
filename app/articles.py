@@ -1,7 +1,7 @@
 import os
 import logging
 
-logger = logging.getLogger('app.publisher')
+logger = logging.getLogger('app.articles')
 
 class Articles:
     def __init__(self, bigquery_client):
