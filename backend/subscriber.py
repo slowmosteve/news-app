@@ -4,15 +4,29 @@ import logging
 logger = logging.getLogger('app.subscriber')
 
 class Subscriber:
-    def __init__(self, subscriber_client, gcsfs):
+    def __init__(self, subscriber_client, gcsfs_client):
         """Instantiates the Subscriber class for accessing messages from a Pubsub subscription
         and writing messages to Cloud Storage
         Args:
             subscriber_client: Pubsub subscriber client
-            gcsfs: a client for GCSFS
+            gcsfs_client: a client for GCSFS
         """
         self.subscriber_client = subscriber_client
-        self.gcsfs = gcsfs
+        self.gcsfs_client = gcsfs_client
+
+    def write_messages_to_file(self, message_list, bucket_path, filename):
+        """Write pubsub messages to NDJSON file to be loaded to BigQuery
+        Args:
+            message_list: list of dictionaries to be converted to NDJSON file
+            bucket_path: GCS bucket path e.g. "gs://bucket_path"
+            filename: name of the resulting file without extension
+        """
+        
+        with self.gcsfs_client.open('{}/{}.ndjson'.format(bucket_path, filename), 'w') as f:
+            for item in message_list:
+                f.write(item+'\n')
+
+        return 'Messages written to file', 200
 
     def get_messages(self, subscription_path, bucket_name, filename):
         """Retrieves messages from a Pubsub topic and writes to bucket
@@ -45,7 +59,7 @@ class Subscriber:
             bucket_path = 'gs://{}'.format(bucket_name)
             
             # only write files with messages
-            if len(message_list) > 0:
+            if message_list:
                 self.write_messages_to_file(message_list, bucket_path, filename)
                 print('wrote file {} to bucket {}'.format(filename, bucket_path))
                 logger.info('wrote file {} to bucket {}'.format(filename, bucket_path))
@@ -69,16 +83,3 @@ class Subscriber:
 
             return 'Failed to get messages', 400
 
-    def write_messages_to_file(self, message_list, bucket_path, filename):
-        """Write pubsub messages to NDJSON file to be loaded to BigQuery
-        Args:
-            message_list: list of dictionaries to be converted to NDJSON file
-            bucket_path: GCS bucket path e.g. "gs://bucket_path"
-            filename: name of the resulting file without extension
-        """
-        
-        with self.gcsfs.open('{}/{}.ndjson'.format(bucket_path, filename), 'w') as f:
-            for item in message_list:
-                f.write(item+'\n')
-
-        return 'Messages written to file', 200
